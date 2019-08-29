@@ -41,8 +41,7 @@ The structure in the file system should be as follows:
 │   │       └── Dockerfile
 │   └── src
 │       ├── api
-│       │   ├── api.py
-│       │   └── __init__.py
+│       │   └── api.py
 │       └── ui
 │           └── ui.sh
 ├── README
