@@ -1,0 +1,36 @@
+version: "3"
+services:
+  api:
+    container_name: api
+    volumes:
+      - "${PWD}/wait-for-rest.sh:/opt/wait-for-rest.sh"
+    healthcheck:
+      test: "/bin/bash /opt/wait-for-rest.sh http://api:5000/token 200 20 80 || exit 1"
+      interval: 5s
+      timeout: 1m
+    build:
+      context: .
+      dockerfile: files/docker/api/Dockerfile
+    ports:
+      - "127.0.0.1:5000:5000"
+    networks:
+      - stack-network
+  ui:
+    container_name: ui
+    volumes:
+      - "${PWD}/files/src/ui/ui.sh:/opt/ui/ui.sh"
+      - "${PWD}/wait-for-rest.sh:/opt/wait-for-rest.sh"
+    healthcheck:
+      test: "while [[ ! -f tokenfile ]]; do sleep 5; done"
+      interval: 5s
+      timeout: 1m
+    depends_on:
+      - api
+    command: /bin/sh -c "(/bin/bash /opt/wait-for-rest.sh http://api:5000/token 200 20 80) && /bin/bash /opt/ui/ui.sh || exit 1"
+    build:
+      context: .
+      dockerfile: files/docker/ui/Dockerfile
+    networks:
+      - stack-network
+networks:
+  stack-network:

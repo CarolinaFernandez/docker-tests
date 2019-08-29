@@ -1,0 +1,31 @@
+version: "3"
+services:
+  api:
+    container_name: api
+    healthcheck:
+      test: "while [[ -z $$(curl http://localhost:5000/token) ]]; do sleep 5; done"
+      interval: 5s
+      timeout: 1m
+    build:
+      context: .
+      dockerfile: files/docker/api/Dockerfile
+    ports:
+      - "127.0.0.1:5000:5000"
+    networks:
+      - stack-network
+  ui:
+    container_name: ui
+    healthcheck:
+      test: "while [[ ! -f tokenfile ]]; do sleep 5; done"
+      interval: 5s
+      timeout: 1m
+    depends_on:
+      - api
+    command: /bin/sh -c "while [[ -z $$(curl http://api:5000/token) ]]; do sleep 5; done && echo 'Token retrieved' > tokenfile && sleep 5m"
+    build:
+      context: .
+      dockerfile: files/docker/ui/Dockerfile
+    networks:
+      - stack-network
+networks:
+  stack-network:
